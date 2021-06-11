@@ -3,11 +3,10 @@ package com.example.android.camera2.video.grafika;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
-import com.example.android.camera2.video.fragments.CameraFragment;
+import com.example.android.camera2.video.fragments.CameraFragmentGlSurface;
 
 import java.lang.ref.WeakReference;
 
@@ -25,11 +24,11 @@ public class CameraHandler extends Handler {
     public static final String TAG = "CameraHandlerGrafika";
 
     // Weak reference to the Activity; only access this from the UI thread.
-    private WeakReference<CameraFragment> mWeakActivity;
+    private WeakReference<CameraFragmentGlSurface> mWeakActivity;
 
-    public CameraHandler(CameraFragment activity, HandlerThread thread) {
+    public CameraHandler(CameraFragmentGlSurface fragment, HandlerThread thread) {
         super(thread.getLooper());
-        mWeakActivity = new WeakReference<CameraFragment>(activity);
+        mWeakActivity = new WeakReference<CameraFragmentGlSurface>(fragment);
     }
 
     /**
@@ -45,7 +44,7 @@ public class CameraHandler extends Handler {
         int what = inputMessage.what;
         Log.d(TAG, "CameraHandler [" + this + "]: what=" + what);
 
-        CameraFragment activity = mWeakActivity.get();
+        CameraFragmentGlSurface activity = mWeakActivity.get();
         if (activity == null) {
             Log.w(TAG, "CameraHandler.handleMessage: activity is null");
             return;

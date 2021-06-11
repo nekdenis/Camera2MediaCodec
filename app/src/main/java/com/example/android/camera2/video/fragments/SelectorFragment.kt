@@ -41,9 +41,9 @@ import com.example.android.camera2.video.R
 class SelectorFragment : Fragment() {
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? = RecyclerView(requireContext())
 
     @SuppressLint("MissingPermission")
@@ -54,7 +54,7 @@ class SelectorFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
 
             val cameraManager =
-                    requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
+                requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
             val cameraList = enumerateVideoCameras(cameraManager)
 
@@ -63,8 +63,11 @@ class SelectorFragment : Fragment() {
                 view.findViewById<TextView>(android.R.id.text1).text = item.name
                 view.setOnClickListener {
                     Navigation.findNavController(requireActivity(), R.id.fragment_container)
-                            .navigate(SelectorFragmentDirections.actionSelectorToCamera(
-                                    item.cameraId, item.size.width, item.size.height, item.fps))
+                        .navigate(
+                            SelectorFragmentDirections.actionSelectorToCamera(
+                                item.size.width, item.size.height, item.fps, item.cameraId
+                            )
+                        )
                 }
             }
         }
@@ -73,10 +76,11 @@ class SelectorFragment : Fragment() {
     companion object {
 
         private data class CameraInfo(
-                val name: String,
-                val cameraId: String,
-                val size: Size,
-                val fps: Int)
+            val name: String,
+            val cameraId: String,
+            val size: Size,
+            val fps: Int
+        )
 
         /** Converts a lens orientation enum into a human-readable string */
         private fun lensOrientationString(value: Int) = when (value) {
@@ -99,17 +103,23 @@ class SelectorFragment : Fragment() {
             cameraManager.cameraIdList.forEach { id ->
                 val characteristics = cameraManager.getCameraCharacteristics(id)
                 val orientation = lensOrientationString(
-                        characteristics.get(CameraCharacteristics.LENS_FACING)!!)
+                    characteristics.get(CameraCharacteristics.LENS_FACING)!!
+                )
 
                 // Query the available capabilities and output formats
                 val capabilities = characteristics.get(
-                        CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)!!
+                    CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES
+                )!!
                 val cameraConfig = characteristics.get(
-                        CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
+                    CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP
+                )!!
 
                 // Return cameras that declare to be backward compatible
-                if (capabilities.contains(CameraCharacteristics
-                                .REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE)) {
+                if (capabilities.contains(
+                        CameraCharacteristics
+                            .REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE
+                    )
+                ) {
                     // Recording should always be done in the most efficient format, which is
                     //  the format native to the camera framework
                     val targetClass = MediaRecorder::class.java
@@ -118,13 +128,16 @@ class SelectorFragment : Fragment() {
                     cameraConfig.getOutputSizes(targetClass).forEach { size ->
                         // Get the number of seconds that each frame will take to process
                         val secondsPerFrame =
-                                cameraConfig.getOutputMinFrameDuration(targetClass, size) /
-                                        1_000_000_000.0
+                            cameraConfig.getOutputMinFrameDuration(targetClass, size) /
+                                    1_000_000_000.0
                         // Compute the frames per second to let user select a configuration
                         val fps = if (secondsPerFrame > 0) (1.0 / secondsPerFrame).toInt() else 0
                         val fpsLabel = if (fps > 0) "$fps" else "N/A"
-                        availableCameras.add(CameraInfo(
-                                "$orientation ($id) $size $fpsLabel FPS", id, size, fps))
+                        availableCameras.add(
+                            CameraInfo(
+                                "$orientation ($id) $size $fpsLabel FPS", id, size, fps
+                            )
+                        )
                     }
                 }
             }
